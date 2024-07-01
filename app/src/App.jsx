@@ -6,8 +6,6 @@ import { MainContainer, ChatContainer, MessageList, Message, MessageInput, Typin
 
 function App() {
 
-  const API_KEY="sk-proj-vA5i98x2ighLXuHBS82sT3BlbkFJ3UkqXIhgnp8Tp7GrCtrD";
-
   const [typing, setTyping] = useState(false);
 
   const [messages, setMessages] = useState([
@@ -19,6 +17,7 @@ function App() {
   ]);
 
   const handleSend = async (message) => {
+    console.log(import.meta.env.VITE_REACT_APP_API_KEY);
     const newMessage = {
       message: message,
       sender: "user",
@@ -58,7 +57,7 @@ function App() {
       await fetch("https://api.openai.com/v1/chat/completions",{
         method:"POST",
         headers:{
-          "Authorization":"Bearer " + API_KEY,
+          "Authorization":"Bearer " + import.meta.env.VITE_REACT_APP_API_KEY,
           "Content-Type":"application/json"
         },
         body:JSON.stringify(apiRequestBody)
