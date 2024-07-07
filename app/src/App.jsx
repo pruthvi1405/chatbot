@@ -9,7 +9,7 @@ function App() {
 
   const [messages, setMessages] = useState([
     {
-      message: "Hello, I am ChatGPT",
+      message: "Hello, I am your TravelAgent",
       sender: "ChatGPT",
       direction: "incoming"
     }

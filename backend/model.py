@@ -699,12 +699,13 @@ def classify_sentence(sentence):
     sentence=preprocess_text(sentence)
     X_new = [sentence]
     prediction = pipeline.predict(X_new)
-    return prediction[0]
+    return [prediction[0],sentence]
 
 # Examples
 examples = [
     "What’s the best place to visit in Singapore?",
-    "what are the packages for singapore?"
+    "what are the packages for singapore?",
+    "best tourist packages for Paris"
 ]
 
 for example in examples:
