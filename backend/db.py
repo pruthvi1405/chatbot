@@ -312,6 +312,6 @@ print_table_contents('tours')
 print_table_contents('cruises')
 print_table_contents('car_rentals')
 
-# Commit the changes and close the connection
+
 
 conn.close()

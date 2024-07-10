@@ -36,34 +36,47 @@ def identify_table(sentence):
     
     # Return specific instructions based on the identified table
     if identified_table == "hotels":
-        return ("Just provide a valid SQL query without additional texts for fetching hotel details from the hotels table "
-                "(hotel_id INTEGER PRIMARY KEY AUTOINCREMENT, city TEXT, star_rating INTEGER, price_per_night REAL, currency TEXT) "
-                "using the keywords in the following sentence: ")
+        return ("Please provide a valid SQL query to fetch hotel details from the hotels table. The table schema includes columns hotel_id (INTEGER PRIMARY KEY AUTOINCREMENT), city (TEXT), star_rating (INTEGER), price_per_night (REAL), and currency (TEXT). Write the query to fetch rows from the following keywords: ")
     elif identified_table == "flights":
-        return ("Just provide a valid SQL query without additional texts for fetching flight details from the flights table "
-                "(flight_id INTEGER PRIMARY KEY AUTOINCREMENT, departure_city TEXT, arrival_city TEXT, class TEXT, price REAL, currency TEXT) "
-                "using the keywords in the following sentence: ")
+        return ("Please provide a valid SQL query to fetch flight details from the flights table. The table schema includes columns flight_id (INTEGER PRIMARY KEY AUTOINCREMENT), departure_city (TEXT), arrival_city (TEXT), class (TEXT), price (REAL), and currency (TEXT). Write the query to fetch from the following keywords: ")
     elif identified_table == "car_rentals":
-        return ("Just provide a valid SQL query without additional texts for fetching rental details from the car_rentals table "
-                "(rental_id INTEGER PRIMARY KEY AUTOINCREMENT, city TEXT, price_per_day REAL, currency TEXT) "
-                "using the keywords in the following sentence: ")
+        return ("Please provide a valid SQL query to fetch rental details from the car_rentals table. The table schema includes columns rental_id (INTEGER PRIMARY KEY AUTOINCREMENT), city (TEXT), price_per_day (REAL), and currency (TEXT). Write the query to fetch rows from the following keywords: ")
     elif identified_table == "packages":
-        return ("Just provide a valid SQL query without additional texts for fetching package details from the packages table "
-                "(package_id INTEGER PRIMARY KEY AUTOINCREMENT, destination TEXT, type TEXT, price REAL, currency TEXT) "
-                "using the keywords in the following sentence: ")
+        return ("Please provide a valid SQL query without additional text for fetching package details from the packages table. The table schema includes columns package_id (INTEGER PRIMARY KEY AUTOINCREMENT), destination (TEXT), type (TEXT), price (REAL), and currency (TEXT). Write a query to fetch rows from the following keywords: ")
     elif identified_table == "tours":
-        return ("Just provide a valid SQL query without additional texts for fetching tour details from the tours table "
-                "(tour_id INTEGER PRIMARY KEY AUTOINCREMENT, location TEXT, type TEXT, price REAL, currency TEXT) "
-                "using the keywords in the following sentence: ")
+        return ("Please provide a valid SQL query that retrieves tour details from the tours table. The table schema includes columns tour_id (INTEGER PRIMARY KEY AUTOINCREMENT), location (TEXT), type (TEXT), price (REAL), and currency (TEXT). Write a query to fetch rows from the following keywords: ")
     elif identified_table == "cruises":
-        return ("Just provide a valid SQL query without additional texts for fetching cruise details from the cruises table "
-                "(cruise_id INTEGER PRIMARY KEY AUTOINCREMENT, destination TEXT, duration TEXT, price REAL, currency TEXT) "
-                "using the keywords in the following sentence: ")
+        return ("Please provide a valid SQL query to fetch cruise details from the cruises table. The table schema includes columns cruise_id (INTEGER PRIMARY KEY AUTOINCREMENT), destination (TEXT), duration (TEXT), price (REAL), and currency (TEXT). Write the query to fetch from the following keywords: ")
     else:
         return "Help like a travel agent using the keywords provided"
 
 
 
+
+
+# def extract_and_capitalize_sql(response):
+#     # Extract the SQL query between ```sql and ```
+#     start_idx = response.find("```sql") + len("```sql")
+#     end_idx = response.find("```", start_idx)
+#     sql_query = response[start_idx:end_idx].strip()
+    
+#     # Regular expression to find city names in the query
+#     city_pattern = re.compile(r"departure_city = '([^']+)' AND arrival_city = '([^']+)'", re.IGNORECASE)
+    
+#     # Find the city names
+#     match = city_pattern.search(sql_query)
+#     if match:
+#         departure_city = match.group(1).title()
+#         arrival_city = match.group(2).title()
+        
+#         # Replace with capitalized city names
+#         new_query = city_pattern.sub(
+#             f"departure_city = '{departure_city}' AND arrival_city = '{arrival_city}'", 
+#             sql_query
+#         )
+#         return new_query
+#     else:
+#         return sql_query
 
 
 def extract_and_capitalize_sql(response):
@@ -72,23 +85,20 @@ def extract_and_capitalize_sql(response):
     end_idx = response.find("```", start_idx)
     sql_query = response[start_idx:end_idx].strip()
     
-    # Regular expression to find city names in the query
-    city_pattern = re.compile(r"departure_city = '([^']+)' AND arrival_city = '([^']+)'", re.IGNORECASE)
+    # Regular expression to find city names in various table contexts
+    city_pattern = re.compile(r"\b(city|departure_city|arrival_city|destination)\b\s*=\s*'([^']+)'", re.IGNORECASE)
     
-    # Find the city names
-    match = city_pattern.search(sql_query)
-    if match:
-        departure_city = match.group(1).title()
-        arrival_city = match.group(2).title()
-        
-        # Replace with capitalized city names
-        new_query = city_pattern.sub(
-            f"departure_city = '{departure_city}' AND arrival_city = '{arrival_city}'", 
-            sql_query
-        )
-        return new_query
-    else:
-        return sql_query
+    # Find and capitalize city names
+    def capitalize_city(match):
+        city_column = match.group(1).title()
+        city_name = match.group(2).title()
+        return f"{city_column} = '{city_name}'"
+    
+    # Replace with capitalized city names
+    new_query = city_pattern.sub(capitalize_city, sql_query)
+    
+    return new_query
+
 
 
 def handle_general(api_messages,messages):
@@ -145,8 +155,8 @@ def handle_propriety(api_messages, messages, sentence):
         response1 = client.chat.completions.create(
             model='gpt-3.5-turbo',
             messages=[
-                {"role": "system", "content": "Provide information like a travel agent from the details fetched "},
-                {"role": "user", "content": result_string}
+                {"role": "system", "content": "Explain like a travel agent"},
+                {"role": "user", "content": "The data fetched from database with "+sql_query+" is :"+result_string+" Please explain like a travel agent to the customer"}
             ]
         )
 
